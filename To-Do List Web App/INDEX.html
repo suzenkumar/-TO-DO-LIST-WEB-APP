@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Web App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Container for the To-Do List -->
+    <div class="container mt-5">
+        <h2>To-Do List</h2>
+
+        <!-- Input and Button for Adding Tasks -->
+        <div class="input-group mb-3">
+            <input type="text" id="taskInput" class="form-control" placeholder="Add a new task">
+            <button id="addTaskBtn" class="btn btn-primary">Add Task</button>
+        </div>
+
+        <!-- Filters for Pending and Completed Tasks -->
+        <div class="mb-3">
+            <button id="showAll" class="btn btn-secondary">All Tasks</button>
+            <button id="showPending" class="btn btn-warning">Pending</button>
+            <button id="showCompleted" class="btn btn-success">Completed</button>
+        </div>
+
+        <!-- Task List -->
+        <ul id="taskList" class="list-group"></ul>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Initialize tasks from localStorage or an empty array
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // Function to update the task list in the DOM
+        function updateTaskList() {
+            const taskList = $("#taskList");
+            taskList.empty();
+
+            tasks.forEach((task, index) => {
+                const taskClass = task.completed ? 'list-group-item-success' : 'list-group-item-danger';
+                const taskHTML = `
+                    <li class="list-group-item ${taskClass}">
+                        <input type="checkbox" class="completeTask" data-index="${index}" ${task.completed ? 'checked' : ''}>
+                        <span class="task-text ${task.completed ? 'text-decoration-line-through' : ''}">${task.name}</span>
+                        <button class="btn btn-danger btn-sm float-end deleteTask" data-index="${index}">Delete</button>
+                    </li>
+                `;
+                taskList.append(taskHTML);
+            });
+
+            // Save tasks to localStorage
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Add task
+        $("#addTaskBtn").click(function () {
+            const taskName = $("#taskInput").val().trim();
+            if (taskName) {
+                tasks.push({ name: taskName, completed: false });
+                $("#taskInput").val('');
+                updateTaskList();
+            }
+        });
+
+        // Mark task as complete
+        $(document).on("change", ".completeTask", function () {
+            const taskIndex = $(this).data("index");
+            tasks[taskIndex].completed = this.checked;
+            updateTaskList();
+        });
+
+        // Delete task
+        $(document).on("click", ".deleteTask", function () {
+            const taskIndex = $(this).data("index");
+            tasks.splice(taskIndex, 1);
+            updateTaskList();
+        });
+
+        // Filter tasks
+        $("#showAll").click(function () {
+            updateTaskList();
+        });
+
+        $("#showPending").click(function () {
+            const pendingTasks = tasks.filter(task => !task.completed);
+            tasks = pendingTasks;
+            updateTaskList();
+        });
+
+        $("#showCompleted").click(function () {
+            const completedTasks = tasks.filter(task => task.completed);
+            tasks = completedTasks;
+            updateTaskList();
+        });
+
+        // Initial update of the task list on page load
+        updateTaskList();
+    </script>
+
+</body>
+
+</html>
